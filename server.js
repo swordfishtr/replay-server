@@ -8,13 +8,15 @@ import path from 'path';
 import cfg from './config.js';
 
 const app = express();
-const template = fs.readFileSync('template.html', { encoding: 'utf-8' });
+const template = fs.readFileSync('portal/replay.pokemonshowdown.com/testclient.html', { encoding: 'utf-8' });
 
 // Small index means fresh in memory
 const cache = [];
 
+app.use(express.static('portal'));
+
 app.get('/:replay', (req, res) => {
-	console.log(`${Date.now() / 1000} - ${req.params.replay}`);
+	console.log(`${parseInt(Date.now() / 1000)} - ${req.params.replay}`);
 
 	const [replay, api] = req.params.replay.split('.', 2);
 	const parts = replay.split('-', 3);

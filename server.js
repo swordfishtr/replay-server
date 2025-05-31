@@ -66,7 +66,7 @@ app.listen(cfg.port, () => {
 });
 
 function send(res, data, api) {
-	api = api.toLowerCase();
+	api = api?.toLowerCase();
 
 	// These are not implemented
 	data.formatid ??= data.id.split('-', 1)[0];

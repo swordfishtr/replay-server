@@ -1,0 +1,7 @@
+node_modules
+dist
+tmp/**/*
+replays/**/*
+config.js
+*.db
+*.log

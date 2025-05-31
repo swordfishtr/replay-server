@@ -13,7 +13,7 @@ const template = fs.readFileSync('portal/replay.pokemonshowdown.com/testclient.h
 // Small index means fresh in memory
 const cache = [];
 
-app.use(express.static('portal'));
+app.use('portal', express.static('portal'));
 
 app.get('/:replay', (req, res) => {
 	console.log(`${parseInt(Date.now() / 1000)} - ${req.params.replay}`);

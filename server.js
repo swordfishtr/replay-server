@@ -9,6 +9,7 @@ import cfg from './config.js';
 
 const app = express();
 // const template = fs.readFileSync('portal/replay.pokemonshowdown.com/testclient.html', { encoding: 'utf-8' });
+const testclient = path.resolve('./portal/replay.pokemonshowdown.com/testclient.html');
 
 // Small index means fresh in memory
 const cache = [];
@@ -101,5 +102,5 @@ function send(res, data, api) {
 	// );
 	// res.send(buf);
 
-	res.sendFile('./portal/replay.pokemonshowdown.com/testclient.html');
+	res.sendFile(testclient);
 }

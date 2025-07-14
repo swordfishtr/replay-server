@@ -3,8 +3,11 @@ export default {
 	/** Port to listen on, 0 to leave the decision to system. */
 	port: 3000,
 
-	/** Path of directory holding replays. */
+	/** Path of (symlink to) directory holding replays. */
 	replaysDir: '',
+
+	/** Path of (symlink to) replay.pokemonshowdown.com */
+	portalDir: '',
 
 	/**
 	 * Number of replays to keep in memory after reading from from the filesystem.

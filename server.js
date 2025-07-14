@@ -101,5 +101,5 @@ function send(res, data, api) {
 	// );
 	// res.send(buf);
 
-	res.sendFile('portal/replay.pokemonshowdown.com/testclient.html');
+	res.sendFile('./portal/replay.pokemonshowdown.com/testclient.html');
 }

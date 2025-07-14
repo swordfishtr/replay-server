@@ -8,16 +8,43 @@ import path from 'path';
 import cfg from './config.js';
 
 const app = express();
+const listclient = path.resolve('./list.html');
 const testclient = path.resolve('./portal/replay.pokemonshowdown.com/testclient.html');
 
 // Small index means fresh in memory
 const cache = [];
 
+// Requests for files in replay.pokemonshowdown.com
 app.use('/portal', express.static('portal'));
 
-// Requests for replays list
+// Requests for background image (global css skips the above step)
+app.get('/images/:img', (req, res) => {
+	const target = req.params.img.replaceAll('..', '');
+	res.sendFile(path.resolve('./portal/replay.pokemonshowdown.com/images/', target));
+});
+
+// Requests for replays list client
 app.get('/', (req, res) => {
-	res.sendFile(path.resolve('./list.html'));
+	res.sendFile(listclient);
+});
+
+// Requests for batch replay metadata
+app.get('/api', (req, res) => {
+	// This should return an array of objects containing replay id, players, date, rank, and whether replay is password protected.
+	// TODO: showdown chat command for receiving password-included url
+
+	// Max number of replays to return (hard capped later)
+	const limit = typeof req.query.limit === 'string' ? (parseInt(req.query.limit) || 100) : 100;
+
+	// Earliest the replay dates should be
+	const minDate = typeof req.query.minDate === 'string' ? (parseInt(req.query.minDate) || 0) : 0;
+
+	// Latest the replay dates should be - 0 or less means no limit
+	const maxDate = typeof req.query.maxDate === 'string' ? (parseInt(req.query.maxDate) || 0) : 0;
+
+	const results = [limit, minDate, maxDate];
+
+	res.json(results);
 });
 
 // Requests for a replay
@@ -68,12 +95,6 @@ app.get('/:replay', (req, res) => {
 		res.status(404).send();
 		return;
 	}
-});
-
-// Requests for background image
-app.get('/images/:img', (req, res) => {
-	const target = req.params.img.replaceAll('..', '');
-	res.sendFile(path.resolve('./portal/replay.pokemonshowdown.com/images/', target));
 });
 
 // Start serving

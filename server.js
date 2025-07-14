@@ -8,7 +8,7 @@ import path from 'path';
 import cfg from './config.js';
 
 const app = express();
-const template = fs.readFileSync('portal/replay.pokemonshowdown.com/testclient.html', { encoding: 'utf-8' });
+// const template = fs.readFileSync('portal/replay.pokemonshowdown.com/testclient.html', { encoding: 'utf-8' });
 
 // Small index means fresh in memory
 const cache = [];
@@ -85,19 +85,21 @@ function send(res, data, api) {
 	}
 
 	// default to HTML
-	const scriptid = `replaylog-${data.id}${data.password ? `-${data.password}` : ''}`;
-	let buf = template;
-	buf = buf.replaceAll(
-		'<!--$0-->',
-		`<script type="text/plain" class="log" id="${scriptid}">\n` +
-		data.log +
-		'\n</script>'
-	);
-	buf = buf.replaceAll(
-		'<!--$1-->',
-		`<script type="application/json" class="data" id="${scriptid}">\n` +
-		JSON.stringify(data) +
-		'\n</script>'
-	);
-	res.send(buf);
+	// const scriptid = `replaylog-${data.id}${data.password ? `-${data.password}` : ''}`;
+	// let buf = template;
+	// buf = buf.replaceAll( // test: we might not need this
+	// 	'<!--$0-->',
+	// 	`<script type="text/plain" class="log" id="${scriptid}">\n` +
+	// 	data.log +
+	// 	'\n</script>'
+	// );
+	// buf = buf.replaceAll(
+	// 	'<!--$1-->',
+	// 	`<script type="application/json" class="data" id="${scriptid}">\n` +
+	// 	JSON.stringify(data) +
+	// 	'\n</script>'
+	// );
+	// res.send(buf);
+
+	res.sendFile('portal/replay.pokemonshowdown.com/testclient.html');
 }

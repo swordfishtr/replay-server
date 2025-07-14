@@ -73,9 +73,10 @@ app.get('/:replay', (req, res) => {
 // Requests for background image
 app.get('/images/:img', (req, res) => {
 	const target = req.params.img.replaceAll('..', '');
-	res.sendFile(path.resolve(target));
+	res.sendFile(path.resolve('./portal/replay.pokemonshowdown.com/images/', target));
 });
 
+// Start serving
 app.listen(cfg.port, () => {
 	console.log('Replay server has started.');
 });

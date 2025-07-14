@@ -8,7 +8,6 @@ import path from 'path';
 import cfg from './config.js';
 
 const app = express();
-// const template = fs.readFileSync('portal/replay.pokemonshowdown.com/testclient.html', { encoding: 'utf-8' });
 const testclient = path.resolve('./portal/replay.pokemonshowdown.com/testclient.html');
 
 // Small index means fresh in memory
@@ -16,6 +15,12 @@ const cache = [];
 
 app.use('/portal', express.static('portal'));
 
+// Requests for replays list
+app.get('/', (req, res) => {
+	res.sendFile(path.resolve('./list.html'));
+});
+
+// Requests for a replay
 app.get('/:replay', (req, res) => {
 	console.log(`${parseInt(Date.now() / 1000)} - ${req.params.replay}`);
 
@@ -26,6 +31,7 @@ app.get('/:replay', (req, res) => {
 
 	const i = cache.findIndex((x) => x.id === id);
 
+	// Exists in cache
 	if(i > -1) {
 		// Keep it fresh
 		if(i !== 0) cache.unshift(cache.splice(i, 1)[0]);
@@ -40,6 +46,7 @@ app.get('/:replay', (req, res) => {
 		return;
 	}
 
+	// Doesn't exist in cache
 	try {
 		const data = JSON.parse(fs.readFileSync(path.normalize(`${cfg.replaysDir}/${replay}.json`), { encoding: 'utf-8' }));
 
@@ -49,6 +56,7 @@ app.get('/:replay', (req, res) => {
 
 		// Access denied
 		if(data.password !== password) {
+			res.status(403).send('Password incorrect.');
 			return;
 		}
 
@@ -56,10 +64,16 @@ app.get('/:replay', (req, res) => {
 		return;
 	}
 	catch(e) {
-		// Replay not saved or request invalid
+		// Replay not saved
 		res.status(404).send();
 		return;
 	}
+});
+
+// Requests for background image
+app.get('/images/:img', (req, res) => {
+	const target = req.params.img.replaceAll('..', '');
+	res.sendFile(path.resolve(target));
 });
 
 app.listen(cfg.port, () => {
@@ -73,7 +87,7 @@ function send(res, data, api) {
 	data.formatid ??= data.id.split('-', 1)[0];
 	data.views ??= 0;
 
-	// JSON
+	// json
 	if(api === 'json') {
 		res.json(data);
 		return;
@@ -85,22 +99,12 @@ function send(res, data, api) {
 		return;
 	}
 
-	// default to HTML
-	// const scriptid = `replaylog-${data.id}${data.password ? `-${data.password}` : ''}`;
-	// let buf = template;
-	// buf = buf.replaceAll( // test: we might not need this
-	// 	'<!--$0-->',
-	// 	`<script type="text/plain" class="log" id="${scriptid}">\n` +
-	// 	data.log +
-	// 	'\n</script>'
-	// );
-	// buf = buf.replaceAll(
-	// 	'<!--$1-->',
-	// 	`<script type="application/json" class="data" id="${scriptid}">\n` +
-	// 	JSON.stringify(data) +
-	// 	'\n</script>'
-	// );
-	// res.send(buf);
+	// html
+	if(api === undefined) {
+		res.sendFile(testclient);
+		return;
+	}
 
-	res.sendFile(testclient);
+	// not something we support
+	res.status(400).send();
 }

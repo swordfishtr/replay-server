@@ -8,11 +8,48 @@ import path from 'path';
 import cfg from './config.js';
 
 const app = express();
+const replays = path.resolve(cfg.replaysDir);
 const listclient = path.resolve('./list.html');
 const testclient = path.resolve('./portal/replay.pokemonshowdown.com/testclient.html');
 
-// Small index means fresh in memory
-const cache = [];
+// Storing popular replays including log and inputlog for faster access.
+// Small index means fresh in memory.
+const cacheFiles = [];
+
+// // Storing all replays excluding log and inputlog for faster access.
+// // Updates as files get created or updated.
+// const cacheMetadata = {};
+// for(const file of fs.readdirSync(replays)) {
+// 	if(!file.endsWith('.json')) continue;
+// 	const data = JSON.parse(fs.readFileSync(`${replays}/${file}`, { encoding: 'utf-8' }));
+// 	delete data.log;
+// 	delete data.inputlog;
+// 	cacheMetadata[file.slice(0,-5)] = data;
+// }
+// fs.watch(replays, 'utf-8', function(event, filename) {
+// 	// this fires rename on file create, and then change on data write.
+// 	if(event !== 'change') return;
+
+// 	// A replay (possibly existing) has been updated.
+// 	if(filename?.endsWith('.json')) {
+// 		const data = JSON.parse(fs.readFileSync(`${replays}/${filename}`, { encoding: 'utf-8' }));
+// 		delete data.log;
+// 		delete data.inputlog;
+// 		cacheMetadata[filename.slice(0,-5)] = data;
+// 	}
+
+// 	// Check that we're not missing anything else (maybe filename was not provided).
+// 	for(const file of fs.readdirSync(replays)) {
+// 		if(!file.endsWith('.json') || file.slice(0,-5) in cacheMetadata) continue;
+// 		const data = JSON.parse(fs.readFileSync(`${replays}/${file}`, { encoding: 'utf-8' }));
+// 		delete data.log;
+// 		delete data.inputlog;
+// 		cacheMetadata[file.slice(0,-5)] = data;
+// 	}
+
+// 	// Now we're not covering the case of an existing replay being updated with no filename provided.
+// 	// But we can't read and parse all replays every time one is uploaded, which would be the only way to cover this case.
+// });
 
 // Requests for files in replay.pokemonshowdown.com
 app.use('/portal', express.static('portal'));
@@ -31,7 +68,6 @@ app.get('/', (req, res) => {
 // Requests for batch replay metadata
 app.get('/api', (req, res) => {
 	// This should return an array of objects containing replay id, players, date, rank, and whether replay is password protected.
-	// TODO: showdown chat command for receiving password-included url
 
 	// Max number of replays to return (hard capped later)
 	const limit = typeof req.query.limit === 'string' ? (parseInt(req.query.limit) || 100) : 100;
@@ -56,34 +92,34 @@ app.get('/:replay', (req, res) => {
 	const id = `${parts[0]}-${parts[1]}`;
 	const password = parts[2] ?? null;
 
-	const i = cache.findIndex((x) => x.id === id);
+	const i = cacheFiles.findIndex((x) => x.id === id);
 
-	// Exists in cache
+	// Exists in cacheFiles
 	if(i > -1) {
 		// Keep it fresh
-		if(i !== 0) cache.unshift(cache.splice(i, 1)[0]);
+		if(i !== 0) cacheFiles.unshift(cacheFiles.splice(i, 1)[0]);
 
 		// Access denied
-		if(cache[i].password !== password) {
-			res.status(403).send('Password incorrect.');
+		if(cacheFiles[0].password !== password) {
+			res.status(403).send('Password incorrect. If you lost it, login on the server and send /help accessreplay');
 			return;
 		}
 
-		send(res, cache[i], api);
+		send(res, cacheFiles[0], api);
 		return;
 	}
 
-	// Doesn't exist in cache
+	// Doesn't exist in cacheFiles
 	try {
-		const data = JSON.parse(fs.readFileSync(path.normalize(`${cfg.replaysDir}/${replay}.json`), { encoding: 'utf-8' }));
+		const data = JSON.parse(fs.readFileSync(path.normalize(`${replays}/${replay}.json`), { encoding: 'utf-8' }));
 
 		// Remember next time
-		cache.unshift(data);
-		if(cache.length > cfg.maxCache) cache.pop();
+		cacheFiles.unshift(data);
+		if(cacheFiles.length > cfg.maxCache) cacheFiles.pop();
 
 		// Access denied
 		if(data.password !== password) {
-			res.status(403).send('Password incorrect.');
+			res.status(403).send('Password incorrect. If you lost it, login on the server and send /help accessreplay');
 			return;
 		}
 

@@ -7,6 +7,8 @@ import fs from 'fs';
 import path from 'path';
 import cfg from './config.js';
 
+const ERR403 = (id) => `Password incorrect. If you lost it, login on the server and send /accessreplay https://replay.generationssd.co.uk/${id}`;
+
 const app = express();
 const replays = path.resolve(cfg.replaysDir);
 // TODO: resolve cfg.portalDir
@@ -102,7 +104,7 @@ app.get('/:replay', (req, res) => {
 
 		// Access denied
 		if(cacheFiles[0].password !== password) {
-			res.status(403).send(`Password incorrect. If you lost it, login on the server and send /accessreplay ${id}`);
+			res.status(403).send(ERR403(id));
 			return;
 		}
 
@@ -122,7 +124,7 @@ app.get('/:replay', (req, res) => {
 
 		// Access denied
 		if(cacheFiles[0].password !== password) {
-			res.status(403).send(`Password incorrect. If you lost it, login on the server and send /accessreplay ${id}`);
+			res.status(403).send(ERR403(id));
 			return;
 		}
 

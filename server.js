@@ -9,6 +9,7 @@ import cfg from './config.js';
 
 const app = express();
 const replays = path.resolve(cfg.replaysDir);
+// TODO: resolve cfg.portalDir
 const listclient = path.resolve('./list.html');
 const testclient = path.resolve('./portal/replay.pokemonshowdown.com/testclient.html');
 
@@ -101,7 +102,7 @@ app.get('/:replay', (req, res) => {
 
 		// Access denied
 		if(cacheFiles[0].password !== password) {
-			res.status(403).send('Password incorrect. If you lost it, login on the server and send /help accessreplay');
+			res.status(403).send(`Password incorrect. If you lost it, login on the server and send /accessreplay ${id}`);
 			return;
 		}
 
@@ -111,22 +112,24 @@ app.get('/:replay', (req, res) => {
 
 	// Doesn't exist in cacheFiles
 	try {
-		const data = JSON.parse(fs.readFileSync(path.normalize(`${replays}/${replay}.json`), { encoding: 'utf-8' }));
+		// TODO: utilize cacheMetadata here
+
+		const data = JSON.parse(fs.readFileSync(path.normalize(`${replays}/${id}.json`), { encoding: 'utf-8' }));
 
 		// Remember next time
 		cacheFiles.unshift(data);
 		if(cacheFiles.length > cfg.maxCache) cacheFiles.pop();
 
 		// Access denied
-		if(data.password !== password) {
-			res.status(403).send('Password incorrect. If you lost it, login on the server and send /help accessreplay');
+		if(cacheFiles[0].password !== password) {
+			res.status(403).send(`Password incorrect. If you lost it, login on the server and send /accessreplay ${id}`);
 			return;
 		}
 
 		send(res, data, api);
 		return;
 	}
-	catch(e) {
+	catch {
 		// Replay not saved
 		res.status(404).send();
 		return;

@@ -11,7 +11,7 @@ const ERR403 = (id) => `Password incorrect. If you lost it, login on the server 
 
 const app = express();
 const replays = path.resolve(cfg.replaysDir);
-// TODO: resolve cfg.portalDir
+// const portal = path.resolve(cfg.portalDir);
 const listclient = path.resolve('./list.html');
 const testclient = path.resolve('./portal/replay.pokemonshowdown.com/testclient.html');
 
@@ -19,40 +19,43 @@ const testclient = path.resolve('./portal/replay.pokemonshowdown.com/testclient.
 // Small index means fresh in memory.
 const cacheFiles = [];
 
-// // Storing all replays excluding log and inputlog for faster access.
-// // Updates as files get created or updated.
-// const cacheMetadata = {};
-// for(const file of fs.readdirSync(replays)) {
-// 	if(!file.endsWith('.json')) continue;
-// 	const data = JSON.parse(fs.readFileSync(`${replays}/${file}`, { encoding: 'utf-8' }));
-// 	delete data.log;
-// 	delete data.inputlog;
-// 	cacheMetadata[file.slice(0,-5)] = data;
-// }
-// fs.watch(replays, 'utf-8', function(event, filename) {
-// 	// this fires rename on file create, and then change on data write.
-// 	if(event !== 'change') return;
+// Storing all replays excluding log and inputlog for faster access.
+// Updates as files get created or updated.
+const cacheMetadata = {};
+for(const file of fs.readdirSync(replays)) {
+	if(!file.endsWith('.json')) continue;
+	const data = JSON.parse(fs.readFileSync(`${replays}/${file}`, { encoding: 'utf-8' }));
+	delete data.id;
+	delete data.log;
+	delete data.inputlog;
+	cacheMetadata[file.slice(0,-5)] = data;
+}
+fs.watch(replays, 'utf-8', function(event, filename) {
+	// this fires rename on file create, and then change on data write.
+	if(event !== 'change') return;
 
-// 	// A replay (possibly existing) has been updated.
-// 	if(filename?.endsWith('.json')) {
-// 		const data = JSON.parse(fs.readFileSync(`${replays}/${filename}`, { encoding: 'utf-8' }));
-// 		delete data.log;
-// 		delete data.inputlog;
-// 		cacheMetadata[filename.slice(0,-5)] = data;
-// 	}
+	// A replay (possibly existing) has been updated.
+	if(filename?.endsWith('.json')) {
+		const data = JSON.parse(fs.readFileSync(`${replays}/${filename}`, { encoding: 'utf-8' }));
+		delete data.id;
+		delete data.log;
+		delete data.inputlog;
+		cacheMetadata[filename.slice(0,-5)] = data;
+	}
 
-// 	// Check that we're not missing anything else (maybe filename was not provided).
-// 	for(const file of fs.readdirSync(replays)) {
-// 		if(!file.endsWith('.json') || file.slice(0,-5) in cacheMetadata) continue;
-// 		const data = JSON.parse(fs.readFileSync(`${replays}/${file}`, { encoding: 'utf-8' }));
-// 		delete data.log;
-// 		delete data.inputlog;
-// 		cacheMetadata[file.slice(0,-5)] = data;
-// 	}
+	// Check that we're not missing anything else (maybe filename was not provided).
+	for(const file of fs.readdirSync(replays)) {
+		if(!file.endsWith('.json') || file.slice(0,-5) in cacheMetadata) continue;
+		const data = JSON.parse(fs.readFileSync(`${replays}/${file}`, { encoding: 'utf-8' }));
+		delete data.id;
+		delete data.log;
+		delete data.inputlog;
+		cacheMetadata[file.slice(0,-5)] = data;
+	}
 
-// 	// Now we're not covering the case of an existing replay being updated with no filename provided.
-// 	// But we can't read and parse all replays every time one is uploaded, which would be the only way to cover this case.
-// });
+	// Now we're not covering the case of an existing replay being updated with no filename provided.
+	// But we can't read and parse all replays every time one is uploaded, which would be the only way to cover this case.
+});
 
 // Requests for files in replay.pokemonshowdown.com
 app.use('/portal', express.static('portal'));
@@ -71,17 +74,35 @@ app.get('/', (req, res) => {
 // Requests for batch replay metadata
 app.get('/api', (req, res) => {
 	// This should return an array of objects containing replay id, players, date, rank, and whether replay is password protected.
+	try { console.log(req.query); }
+	catch { console.log('req.query error'); }
 
-	// Max number of replays to return (hard capped later)
-	const limit = typeof req.query.limit === 'string' ? (parseInt(req.query.limit) || 100) : 100;
+	// Max number of replays to return
+	const limit = Math.min(
+		(typeof req.query.limit === 'string' ? (parseInt(req.query.limit) || 100) : 100),
+		200
+	);
 
 	// Earliest the replay dates should be
+	// TODO: dates are submitted as YYYY-MM-DD -- convert to epoch here
 	const minDate = typeof req.query.minDate === 'string' ? (parseInt(req.query.minDate) || 0) : 0;
 
 	// Latest the replay dates should be - 0 or less means no limit
 	const maxDate = typeof req.query.maxDate === 'string' ? (parseInt(req.query.maxDate) || 0) : 0;
 
-	const results = [limit, minDate, maxDate];
+	// uploadtime: 1 748 681 170
+	// Date.now(): 1 748 681 170 038
+	let results = Object.entries(cacheMetadata);
+	if(minDate !== 0) results = results.filter(([id, data]) => data.uploadtime > minDate);
+	if(maxDate !== 0) results = results.filter(([id, data]) => data.uploadtime > maxDate);
+
+	// hardcoded sort for now
+	results.sort(([id1, data1], [id2, data2]) => data1.uploadtime - data2.uploadtime);
+	results.reverse();
+
+	if(results.length > limit) results = results.slice(0, limit);
+
+	results = results.map(([id, data]) => ({ id, ...data }));
 
 	res.json(results);
 });

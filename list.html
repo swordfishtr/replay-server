@@ -23,7 +23,7 @@
 					Timestamp
 				</th>
 				<th>
-					Battle ID
+					Link
 				</th>
 				<th>
 					Rating
@@ -98,13 +98,13 @@
 				let buf = '<tr>';
 
 				// Entry
-				buf += `<td>${i}</td>`;
+				buf += `<td>${i + 1}</td>`;
 
 				// Timestamp
 				buf += `<td>${replay.uploadtime}</td>`;
 
-				// Battle ID
-				buf += `<td>${replay.id}</td>`;
+				// Link
+				buf += `<td>https://replay.generationssd.co.uk/${replay.id}</td>`;
 
 				// Rating
 				buf += `<td>${replay.rating ?? 'Unrated'}</td>`;

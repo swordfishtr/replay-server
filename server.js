@@ -26,11 +26,7 @@ const cacheFiles = [];
 const cacheMetadata = {};
 for(const file of fs.readdirSync(replays)) {
 	if(!file.endsWith('.json')) continue;
-	const data = JSON.parse(fs.readFileSync(`${replays}/${file}`, { encoding: 'utf-8' }));
-	delete data.id;
-	delete data.log;
-	delete data.inputlog;
-	cacheMetadata[file.slice(0,-5)] = data;
+	cacheMetadataAdd(file);
 }
 fs.watch(replays, 'utf-8', function(event, filename) {
 	// this fires rename on file create, and then change on data write.
@@ -38,21 +34,13 @@ fs.watch(replays, 'utf-8', function(event, filename) {
 
 	// A replay (possibly existing) has been updated.
 	if(filename?.endsWith('.json')) {
-		const data = JSON.parse(fs.readFileSync(`${replays}/${filename}`, { encoding: 'utf-8' }));
-		delete data.id;
-		delete data.log;
-		delete data.inputlog;
-		cacheMetadata[filename.slice(0,-5)] = data;
+		cacheMetadataAdd(filename);
 	}
 
 	// Check that we're not missing anything else (maybe filename was not provided).
 	for(const file of fs.readdirSync(replays)) {
 		if(!file.endsWith('.json') || file.slice(0,-5) in cacheMetadata) continue;
-		const data = JSON.parse(fs.readFileSync(`${replays}/${file}`, { encoding: 'utf-8' }));
-		delete data.id;
-		delete data.log;
-		delete data.inputlog;
-		cacheMetadata[file.slice(0,-5)] = data;
+		cacheMetadataAdd(file);
 	}
 
 	// Now we're not covering the case of an existing replay being updated with no filename provided.
@@ -190,4 +178,13 @@ function send(res, data, api) {
 
 	// not something we support
 	res.status(400).send();
+}
+
+function cacheMetadataAdd(filename) {
+	const data = JSON.parse(fs.readFileSync(`${replays}/${filename}`, { encoding: 'utf-8' }));
+	delete data.id;
+	delete data.password;
+	delete data.log;
+	delete data.inputlog;
+	cacheMetadata[filename.slice(0,-5)] = data;
 }

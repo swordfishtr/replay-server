@@ -52,10 +52,10 @@ app.use('/portal', express.static('portal'));
 
 // Hardcoded responses
 app.get('/images/bg-starfield.jpg', (req, res) => {
-	res.sendFile('./portal/replay.pokemonshowdown.com/images/bg-starfield.jpg');
+	res.sendFile(path.resolve('./portal/replay.pokemonshowdown.com/images/bg-starfield.jpg'));
 });
 app.get('/favicon.ico', (req, res) => {
-	res.sendFile('./portal/play.pokemonshowdown.com/favicon-32.png');
+	res.sendFile(path.resolve('./portal/play.pokemonshowdown.com/favicon-32.png'));
 });
 
 // Requests for replays list client

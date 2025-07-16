@@ -7,6 +7,41 @@
 </head>
 <body>
 	Let's make a toast to the past!<br>
-	<form action="https://replay.generationssd.co.uk/api" method="get"></form>
+	<form name="queryForm" id="query-form" action="https://replay.generationssd.co.uk/api" method="get">
+		Min Date: <input type="date" name="minDate" id="min-date"><br>
+		Max Date: <input type="date" name="maxDate" id="max-date"><br>
+		<input type="submit" value="Query">
+	</form>
+	<script>
+		const queryform = document.getElementById('query-form');
+		const mindate = document.getElementById('min-date');
+		const maxdate = document.getElementById('max-date');
+		queryform.addEventListener('submit', async (event) => {
+			event.preventDefault();
+
+			// clear table here
+
+			const minDate = ((new Date(mindate.value)).getTime() / 1000) || 0;
+			const maxDate = ((new Date(maxdate.value)).getTime() / 1000) || 0;
+
+			const params = new URLSearchParams({ minDate, maxDate });
+			const url = new URL(queryform.action);
+			url.search = params;
+
+			console.log(url);
+
+			const res = await fetch(url);
+			if(!res.ok) {
+				// add error row to table here
+				console.log('fetch error');
+				return;
+			}
+
+			const data = await res.json();
+			// add a row for of data here
+
+			console.log(data);
+		});
+	</script>
 </body>
 </html>

@@ -2,6 +2,8 @@
  * Custom replay server
  */
 
+'use strict';
+
 import express from 'express';
 import fs from 'fs';
 import path from 'path';
@@ -84,17 +86,14 @@ app.get('/api', (req, res) => {
 	);
 
 	// Earliest the replay dates should be
-	// TODO: dates are submitted as YYYY-MM-DD -- convert to epoch here
 	const minDate = typeof req.query.minDate === 'string' ? (parseInt(req.query.minDate) || 0) : 0;
 
 	// Latest the replay dates should be - 0 or less means no limit
 	const maxDate = typeof req.query.maxDate === 'string' ? (parseInt(req.query.maxDate) || 0) : 0;
 
-	// uploadtime: 1 748 681 170
-	// Date.now(): 1 748 681 170 038
 	let results = Object.entries(cacheMetadata);
-	if(minDate !== 0) results = results.filter(([id, data]) => data.uploadtime > minDate);
-	if(maxDate !== 0) results = results.filter(([id, data]) => data.uploadtime > maxDate);
+	if(minDate !== 0) results = results.filter(([id, data]) => data.uploadtime >= minDate);
+	if(maxDate !== 0) results = results.filter(([id, data]) => data.uploadtime <= maxDate);
 
 	// hardcoded sort for now
 	results.sort(([id1, data1], [id2, data2]) => data1.uploadtime - data2.uploadtime);

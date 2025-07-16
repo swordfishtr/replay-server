@@ -48,7 +48,7 @@ queryform.addEventListener('submit', async (event) => {
 });
 
 // Get latest replays on load
-queryform.submit();
+queryform.dispatchEvent(new Event('submit'));
 
 function genTable(data) {
 	return data

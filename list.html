@@ -11,15 +11,55 @@
 		Min Date: <input type="date" name="minDate" id="min-date"><br>
 		Max Date: <input type="date" name="maxDate" id="max-date"><br>
 		<input type="submit" value="Query">
-	</form>
+		<span id="error-message"></span>
+	</form><br>
+	<table>
+		<thead>
+			<tr>
+				<th>
+					Entry
+				</th>
+				<th>
+					Timestamp
+				</th>
+				<th>
+					Battle ID
+				</th>
+				<th>
+					Rating
+				</th>
+				<th>
+					Private
+				</th>
+				<th>
+					Player 1
+				</th>
+				<th>
+					Player 2
+				</th>
+				<th>
+					Player 3
+				</th>
+				<th>
+					Player 4
+				</th>
+			</tr>
+		</thead>
+		<tbody id="table-body"></tbody>
+	</table>
 	<script>
 		const queryform = document.getElementById('query-form');
 		const mindate = document.getElementById('min-date');
 		const maxdate = document.getElementById('max-date');
+
+		const errormessage = document.getElementById('error-message');
+		const table = document.getElementById('table-body');
+
 		queryform.addEventListener('submit', async (event) => {
 			event.preventDefault();
 
-			// clear table here
+			errormessage.innerText = '';
+			table.innerHTML = '';
 
 			const minDate = ((new Date(mindate.value)).getTime() / 1000) || 0;
 			const maxDate = ((new Date(maxdate.value)).getTime() / 1000) || 0;
@@ -32,16 +72,58 @@
 
 			const res = await fetch(url);
 			if(!res.ok) {
-				// add error row to table here
-				console.log('fetch error');
+				errormessage.innerText = 'Failed to fetch replay data.';
 				return;
 			}
 
 			const data = await res.json();
-			// add a row for of data here
+			if(!Array.isArray(data)) {
+				errormessage.innerText = 'Received invalid replay data.';
+				return;
+			}
+			if(!data.length) {
+				errormessage.innerText = 'No replays found.';
+				return;
+			}
 
 			console.log(data);
+
+			table.innerHTML = genTable(data);
 		});
+
+		function genTable(data) {
+			let out = '';
+
+			data.forEach((replay, i) => {
+				let buf = '<tr>';
+
+				// Entry
+				buf += `<td>${i}</td>`;
+
+				// Timestamp
+				buf += `<td>${replay.uploadtime}</td>`;
+
+				// Battle ID
+				buf += `<td>${replay.id}</td>`;
+
+				// Rating
+				buf += `<td>${replay.rating ?? 'Unrated'}</td>`;
+
+				// Private
+				buf += `<td>${Boolean(replay.private)}</td>`;
+
+				// Players
+				buf += `<td>${replay.players[0] ?? '-'}</td>`;
+				buf += `<td>${replay.players[1] ?? '-'}</td>`;
+				buf += `<td>${replay.players[2] ?? '-'}</td>`;
+				buf += `<td>${replay.players[3] ?? '-'}</td>`;
+
+				buf += '</tr>';
+				out += buf;
+			});
+
+			return out;
+		}
 	</script>
 </body>
 </html>

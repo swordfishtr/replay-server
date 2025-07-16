@@ -9,6 +9,8 @@ import fs from 'fs';
 import path from 'path';
 import cfg from './config.js';
 
+// region prep
+
 const ERR403 = (id) => `Password incorrect. If you lost it, login on the server and send /accessreplay https://replay.generationssd.co.uk/${id}`;
 
 const app = express();
@@ -46,6 +48,10 @@ fs.watch(replays, 'utf-8', function(event, filename) {
 	// Now we're not covering the case of an existing replay being updated with no filename provided.
 	// But we can't read and parse all replays every time one is uploaded, which would be the only way to cover this case.
 });
+
+// endregion
+// region setup
+////////////////////////////////////////////////////////////////////////////////
 
 // Requests for files in replay.pokemonshowdown.com
 app.use('/portal', express.static('portal'));
@@ -148,6 +154,10 @@ app.get('/:replay', (req, res) => {
 	}
 });
 
+// endregion
+// region serve
+////////////////////////////////////////////////////////////////////////////////
+
 // Start serving
 app.listen(cfg.port, () => {
 	console.log('Replay server has started.');
@@ -190,3 +200,5 @@ function cacheMetadataAdd(filename) {
 	delete data.inputlog;
 	cacheMetadata[filename.slice(0,-5)] = data;
 }
+
+// endregion

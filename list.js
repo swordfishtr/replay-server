@@ -76,5 +76,5 @@ function genTable(data) {
 		buf += '</tr>';
 		return buf;
 	})
-	.join();
+	.join('');
 }

@@ -50,10 +50,12 @@ fs.watch(replays, 'utf-8', function(event, filename) {
 // Requests for files in replay.pokemonshowdown.com
 app.use('/portal', express.static('portal'));
 
-// Requests for background image (global css skips the above step)
-app.get('/images/:img', (req, res) => {
-	const target = req.params.img.replaceAll('..', '');
-	res.sendFile(path.resolve('./portal/replay.pokemonshowdown.com/images/', target));
+// Hardcoded responses
+app.get('/images/bg-starfield.jpg', (req, res) => {
+	res.sendFile('./portal/replay.pokemonshowdown.com/images/bg-starfield.jpg');
+});
+app.get('/favicon.ico', (req, res) => {
+	res.sendFile('./portal/play.pokemonshowdown.com/favicon-32.png');
 });
 
 // Requests for replays list client

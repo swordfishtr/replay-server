@@ -47,6 +47,9 @@ queryform.addEventListener('submit', async (event) => {
 	table.innerHTML = genTable(data);
 });
 
+// Get latest replays on load
+queryform.submit();
+
 function genTable(data) {
 	return data
 	.map((replay, i) => {

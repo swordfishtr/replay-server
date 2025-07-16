@@ -57,6 +57,9 @@ fs.watch(replays, 'utf-8', function(event, filename) {
 app.use('/portal', express.static('portal'));
 
 // Hardcoded responses
+app.get('/list.js', (req, res) => {
+	res.sendFile(path.resolve('./list.js'));
+});
 app.get('/images/bg-starfield.jpg', (req, res) => {
 	res.sendFile(path.resolve('./portal/replay.pokemonshowdown.com/images/bg-starfield.jpg'));
 });

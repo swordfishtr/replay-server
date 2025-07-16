@@ -76,10 +76,14 @@ app.get('/api', (req, res) => {
 	catch { console.log('req.query error'); }
 
 	// Max number of replays to return
-	const limit = Math.min(
-		(typeof req.query.limit === 'string' ? (parseInt(req.query.limit) || 100) : 100),
-		200
-	);
+	const limit = Math.min((
+		typeof req.query.limit === 'string' ?
+		Math.max((parseInt(req.query.limit) || 100), 0) :
+		100
+	), 200);
+
+	// Format of replays
+	const forceFormat = typeof typeof req.query.format === 'string' ? toID(req.query.format) : null;
 
 	// Earliest the replay dates should be
 	const minDate = typeof req.query.minDate === 'string' ? (parseInt(req.query.minDate) || 0) : 0;
@@ -88,6 +92,7 @@ app.get('/api', (req, res) => {
 	const maxDate = typeof req.query.maxDate === 'string' ? (parseInt(req.query.maxDate) || 0) : 0;
 
 	let results = Object.entries(cacheMetadata);
+	if(forceFormat) results = results.filter(([id, data]) => toID(data.format) === forceFormat);
 	if(minDate !== 0) results = results.filter(([id, data]) => data.uploadtime >= minDate);
 	if(maxDate !== 0) results = results.filter(([id, data]) => data.uploadtime <= maxDate);
 
@@ -199,6 +204,16 @@ function cacheMetadataAdd(filename) {
 	delete data.log;
 	delete data.inputlog;
 	cacheMetadata[filename.slice(0,-5)] = data;
+}
+
+// from Pokemon Showdown
+function toID(text) {
+	if (typeof text !== 'string') {
+		if (text) text = text.id || text.userid || text.roomid || text;
+		if (typeof text === 'number') text = `${text}`;
+		else if (typeof text !== 'string') return '';
+	}
+	return text.toLowerCase().replace(/[^a-z0-9]+/g, '');
 }
 
 // endregion

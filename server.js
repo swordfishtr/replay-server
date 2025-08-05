@@ -15,9 +15,9 @@ const ERR403 = (id) => `Password incorrect. If you lost it, login on the server 
 
 const app = express();
 const replays = path.resolve(cfg.replaysDir);
-// const portal = path.resolve(cfg.portalDir);
+const portal = path.resolve(cfg.portalDir);
 const listclient = path.resolve('./list.html');
-const testclient = path.resolve('./portal/replay.pokemonshowdown.com/testclient.html');
+const testclient = path.resolve(portal, '/replay.pokemonshowdown.com/testclient.html');
 
 // Storing popular replays including log and inputlog for faster access.
 // Small index means fresh in memory.
@@ -54,17 +54,17 @@ fs.watch(replays, 'utf-8', function(event, filename) {
 ////////////////////////////////////////////////////////////////////////////////
 
 // Requests for files in replay.pokemonshowdown.com
-app.use('/portal', express.static('portal'));
+app.use('/portal', express.static(path.resolve(portal, '/replay.pokemonshowdown.com')));
 
 // Hardcoded responses
 app.get('/list.js', (req, res) => {
 	res.sendFile(path.resolve('./list.js'));
 });
 app.get('/images/bg-starfield.jpg', (req, res) => {
-	res.sendFile(path.resolve('./portal/replay.pokemonshowdown.com/images/bg-starfield.jpg'));
+	res.sendFile(path.resolve(portal, '/replay.pokemonshowdown.com/images/bg-starfield.jpg'));
 });
 app.get('/favicon.ico', (req, res) => {
-	res.sendFile(path.resolve('./portal/play.pokemonshowdown.com/favicon-32.png'));
+	res.sendFile(path.resolve(portal, '/play.pokemonshowdown.com/favicon-32.png'));
 });
 
 // Requests for replays list client

@@ -6,7 +6,7 @@ export default {
 	/** Path of (symlink to) directory holding replays. */
 	replaysDir: '',
 
-	/** Path of (symlink to) replay.pokemonshowdown.com */
+	/** Path of (symlink to) pokemon-showdown-client. */
 	portalDir: '',
 
 	/**

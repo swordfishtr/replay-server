@@ -54,7 +54,7 @@ fs.watch(replays, 'utf-8', function(event, filename) {
 ////////////////////////////////////////////////////////////////////////////////
 
 // Requests for files in replay.pokemonshowdown.com
-app.use('/portal', express.static(path.resolve(portal, 'replay.pokemonshowdown.com')));
+app.use('/portal', express.static(portal));
 
 // Hardcoded responses
 app.get('/list.js', (req, res) => {

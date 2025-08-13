@@ -115,6 +115,12 @@ app.get('/:replay', (req, res) => {
 	console.log(`${parseInt(Date.now() / 1000)} - ${req.params.replay}`);
 
 	const [replay, api] = req.params.replay.split('.', 2);
+
+	if(api === undefined) {
+		res.sendFile(testclient);
+		return;
+	}
+
 	const parts = replay.split('-', 3);
 	const id = `${parts[0]}-${parts[1]}`;
 	const password = parts[2] ?? null;
@@ -187,12 +193,6 @@ function send(res, data, api) {
 	// log
 	if(api === 'log') {
 		res.send(data.log);
-		return;
-	}
-
-	// html
-	if(api === undefined) {
-		res.sendFile(testclient);
 		return;
 	}
 

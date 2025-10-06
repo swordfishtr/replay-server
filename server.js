@@ -11,7 +11,7 @@ import cfg from './config.js';
 
 // region prep
 
-const ERR403 = (id) => `Password incorrect. If you lost it, login on the server and send /accessreplay https://replay.generationssd.co.uk/${id}`;
+const ERR403 = (id) => `Password incorrect. If you're a player in this replay, login as the same user on Generations and send the following command in lobby:\n/accessreplay https://replay.generationssd.co.uk/${id}`;
 
 const app = express();
 const replays = path.resolve(cfg.replaysDir);

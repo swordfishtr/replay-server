@@ -31,23 +31,13 @@ for(const file of fs.readdirSync(replays)) {
 	cacheMetadataUpdate(file);
 }
 fs.watch(replays, 'utf-8', function(event, filename) {
-	console.log(`DEBUG: ${new Date()}: ${event} ${filename}`);
-	// this fires rename on file create, and then change on data write.
-	if(event !== 'change') return;
-
-	// A replay (possibly existing) has been updated.
-	if(filename?.endsWith('.json')) {
-		cacheMetadataUpdate(filename);
-	}
-
-	// Check that we're not missing anything else (maybe filename was not provided).
-	for(const file of fs.readdirSync(replays)) {
-		if(!file.endsWith('.json') || file.slice(0,-5) in cacheMetadata) continue;
-		cacheMetadataUpdate(file);
-	}
-
-	// Now we're not covering the case of an existing replay being updated with no filename provided.
-	// But we can't read and parse all replays every time one is uploaded, which would be the only way to cover this case.
+	// When PS creates or updates a replay via `FS.writeUpdate`, the following events fire:
+	// 1. rename id.json.NEW
+	// 2. change id.json.NEW
+	// 3. rename id.json.NEW
+	// 4. rename id.json
+	// A manual edit skips the .NEW steps and instead fires only a change event.
+	if(filename?.endsWith('.json')) cacheMetadataUpdate(filename);
 });
 
 // endregion

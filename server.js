@@ -31,6 +31,7 @@ for(const file of fs.readdirSync(replays)) {
 	cacheMetadataUpdate(file);
 }
 fs.watch(replays, 'utf-8', function(event, filename) {
+	console.log(`DEBUG: ${new Date()}: ${event} ${filename}`);
 	// this fires rename on file create, and then change on data write.
 	if(event !== 'change') return;
 
@@ -205,7 +206,6 @@ function send(res, data, api) {
 }
 
 function cacheMetadataUpdate(filename) {
-	console.log(`DEBUG: ${new Date()}: ${filename}`);
 	const data = JSON.parse(fs.readFileSync(`${replays}/${filename}`, { encoding: 'utf-8' }));
 
 	// if it exists in cacheFiles, update that too

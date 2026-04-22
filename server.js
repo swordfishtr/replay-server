@@ -28,7 +28,7 @@ const cacheFiles = [];
 const cacheMetadata = {};
 for(const file of fs.readdirSync(replays)) {
 	if(!file.endsWith('.json')) continue;
-	cacheMetadataAdd(file);
+	cacheMetadataUpdate(file);
 }
 fs.watch(replays, 'utf-8', function(event, filename) {
 	// this fires rename on file create, and then change on data write.
@@ -36,13 +36,13 @@ fs.watch(replays, 'utf-8', function(event, filename) {
 
 	// A replay (possibly existing) has been updated.
 	if(filename?.endsWith('.json')) {
-		cacheMetadataAdd(filename);
+		cacheMetadataUpdate(filename);
 	}
 
 	// Check that we're not missing anything else (maybe filename was not provided).
 	for(const file of fs.readdirSync(replays)) {
 		if(!file.endsWith('.json') || file.slice(0,-5) in cacheMetadata) continue;
-		cacheMetadataAdd(file);
+		cacheMetadataUpdate(file);
 	}
 
 	// Now we're not covering the case of an existing replay being updated with no filename provided.
@@ -207,8 +207,13 @@ function send(res, data, api) {
 	res.status(400).send();
 }
 
-function cacheMetadataAdd(filename) {
+function cacheMetadataUpdate(filename) {
 	const data = JSON.parse(fs.readFileSync(`${replays}/${filename}`, { encoding: 'utf-8' }));
+
+	// if it exists in cacheFiles, update that too
+	const i = cacheFiles.findIndex((x) => x.id === data.id);
+	if (i > -1) cacheFiles[i] = { ...data };
+
 	delete data.id;
 	delete data.password;
 	delete data.log;

@@ -82,8 +82,6 @@ app.get('/', (req, res) => {
 // Requests for batch replay metadata
 app.get('/api', (req, res) => {
 	// This should return an array of objects containing replay id, players, date, rank, and whether replay is password protected.
-	try { console.log(req.query); }
-	catch { console.log('req.query error'); }
 
 	// Max number of replays to return
 	const limit = Math.min((
@@ -119,7 +117,6 @@ app.get('/api', (req, res) => {
 
 // Requests for a replay
 app.get('/:replay', (req, res) => {
-	console.log(`${parseInt(Date.now() / 1000)} - ${req.params.replay}`);
 
 	const [replay, api] = req.params.replay.split('.', 2);
 
@@ -208,6 +205,7 @@ function send(res, data, api) {
 }
 
 function cacheMetadataUpdate(filename) {
+	console.log(`DEBUG: ${new Date()}: ${filename}`);
 	const data = JSON.parse(fs.readFileSync(`${replays}/${filename}`, { encoding: 'utf-8' }));
 
 	// if it exists in cacheFiles, update that too
